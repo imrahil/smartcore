@@ -61,7 +61,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12], 
-        initial: 1, 
+        initial: 7, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -427,8 +427,7 @@ function slideY(side){
     var bearingHoleOffsetX = bearingsOffsetX+13;
     var X = 40;
     var xrodOffsetZ = 18;
-    mesh = difference(
-        
+    mesh =         
         union(
             difference(
                 //main
@@ -439,53 +438,81 @@ function slideY(side){
             ),
             cube({size:[X+10,Y/2,Z-(bearingsOffsetZ+11+8)]}).translate([15-10,0,bearingsOffsetZ+11+8]),
             cube({size:[X+10,Y/2,3]}).translate([15-10,0,bearingsOffsetZ+8]),
-            cube({size:[X+10,Y/2,bearingsOffsetZ]}).translate([15-10,0,0]),
+            cube({size:[X+10,Y,bearingsOffsetZ]}).translate([15-10,0,0]),
             cube({size:[bearingsOffsetX,Y/2,8]}).translate([X-10,0,bearingsOffsetZ]),
-
-            // round bearings supports in middle
-            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]),
-            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+7.5]),
-            //cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+7.5]),
-            //cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,bearingsOffsetY,bearingsOffsetZ]),
-            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+9.5]),
-            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+11+7.5]),
 
             //extra rod Y support
             cylinder({r:_XYlmDiam/2+3,h:Y,fn:_globalResolution}).rotateX(-90).translate([14,0,-1]),
             cube({size:[15,Y,6]}).translate([-5,0,-6])
-        ),
+        );
 
-        // round top bearings
-        //difference(
-            //cube({size:[20,Y,Z]}).translate([10,0,20]),
-            //cylinder({r:Y/4,h:30,fn:_globalResolution}).translate([30,Y/4,20]),
-            //cylinder({r:Y/4,h:30,fn:_globalResolution}).translate([30,Y-Y/4,20])
-                        
-        //),
-        // long bearing hole
-        cylinder({r:4.1,h:Z-bearingsOffsetZ,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]),
-        cylinder({r:3.8,h:bearingsOffsetZ,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,0]),
-        cylinder({r:4.1,h:Z-bearingsOffsetZ,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ]),
-        //cylinder({r:3.8,h:bearingsOffsetZ,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,0]),
+    // round bearings supports in middle
+    if (side == "right") {
+       mesh = union(
+            mesh,
+            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]),
+            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+7.5]),
+            
+            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+9.5]),
+            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+11+7.5])
+        );
+    } else {
+       mesh = union(
+            mesh,
+            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+7.5]),
+            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+9.5]),
+            
+            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+7.5]),
+            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ])
+        );
+    }
+
+    // long bearing hole
+    if (side == "right") {
+       mesh = difference(
+            mesh,
+            cylinder({r:7/2,h:Z+4,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,-2]),
+            cylinder({r:7/2,h:Z,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ])
+        );
+    } else {
+       mesh = difference(
+            mesh,
+            cylinder({r:7/2,h:Z,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]).setColor(1,0,0),
+            cylinder({r:7/2,h:Z+4,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,2])
+        );
+    }
+
+    mesh = difference (
+        mesh,
+        
+/*
+    // round top bearings
+    difference(
+        cube({size:[20,Y,Z]}).translate([10,0,20]),
+        cylinder({r:Y/4,h:30,fn:_globalResolution}).translate([30,Y/4,20]),
+        cylinder({r:Y/4,h:30,fn:_globalResolution}).translate([30,Y-Y/4,20])
+    ),
+*/
+        
         // screw for endstop X
         //cylinder({r:1.3,h:12,fn:_globalResolution}).rotateX(90).translate([X+12,Y+1,13]),
         
-        // rod Y bool
+        // rod Y bearing bool
         cylinder({r:_XYlmDiam/2+0.1,h:Y+5,fn:_globalResolution}).rotateX(-90).translate([14,0,-1]),
         // rod Y support slice boolean 
         cube({size:[15,Y,1]}).translate([-5,0,-3.5]),
-        // Xrods hole bottom
-        cylinder({r:_XYrodsDiam/2,h:8,fn:_globalResolution}).rotateY(90).translate([X+7,Y-10,15/2]),
-        cylinder({r:_XYrodsDiam/2,h:8,fn:_globalResolution}).rotateY(90).translate([X+7,10,15/2]),
-        // screw to attach the rod top
-        cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([X+12,0,15/2]),
-        // Xrods hole bottom
-//        cylinder({r:_XYrodsDiam/2,h:8,fn:_globalResolution}).rotateY(90).translate([X+7,Y/2,_XYrodsDiam/2+6+xrodOffsetZ]),
-        // screw to attach the rod bottom
-        cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([X+12,Y-10,15/2]),
         // screws for rod Y support
         cylinder({r:1.3,h:10,fn:_globalResolution}).translate([-1,10,-9]),
-        cylinder({r:1.3,h:10,fn:_globalResolution}).translate([-1,Y-10,-9])
+        cylinder({r:1.3,h:10,fn:_globalResolution}).translate([-1,Y-10,-9]),
+        
+        // Xrods hole bottom
+        cylinder({r:_XYrodsDiam/2,h:8,fn:_globalResolution}).rotateY(90).translate([X+7,Y-(_XYrodsDiam/2+3),15/2]),
+        cylinder({r:_XYrodsDiam/2,h:8,fn:_globalResolution}).rotateY(90).translate([X+7,_XYrodsDiam/2+3,15/2]),
+        
+        // screw to attach the rod left
+        cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([X+12,0,15/2]),
+        // screw to attach the rod right
+        cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([X+12,Y-10,15/2])
     );
 
 /*    
@@ -499,6 +526,7 @@ function slideY(side){
                 );
     }
 */
+
     if(output==1 || output == 7){
         if (side == "right") {
             mesh = union(
@@ -1671,8 +1699,9 @@ switch(output){
     break;
     case 7:
         res = [
-            _rods().translate([_globalWidth/2-6,-XaxisOffset,-_globalHeight+22]),
-            slideY("right")
+            //_rods().translate([_globalWidth/2-6,-XaxisOffset,-_globalHeight+22]),
+            slideY("right"),
+            slideY("left").mirroredX().translate([130,0,0])
         ];
     break;
     case 8:
