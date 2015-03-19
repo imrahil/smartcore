@@ -62,7 +62,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12], 
-        initial: 6, 
+        initial: 5, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -89,7 +89,7 @@ function getParameterDefinitions() {
     { name: '_ZrodsDiam', caption: 'Z Rods diameter (6,8,10,12):', type: 'int', initial: 10},
     { name: '_ZrodsOption', caption: 'Z threaded rods:', type: 'choice', initial: 1, values:[0,1,2],captions: ["false", "true", "true-2sides"]},
     { name: '_rodsVisibility', caption: 'Show rods:', type: 'choice', initial: 1, values:[0,1],captions: ["false", "true"]},
-    { name: '_exportReady', caption: 'Export ready:', type: 'choice', initial: 1, values:[0,1],captions: ["false", "true"]},
+    { name: '_exportReady', caption: 'Export ready:', type: 'choice', initial: 0, values:[0,1],captions: ["false", "true"]},
     
     
     {name: '_nemaXYZ', 
@@ -701,6 +701,7 @@ function InductiveSensorSupport(){
 function motorXY(){
     var thickness = 5;
     var mesh;
+    var clearance = 0.2;
     mesh = difference(
         union(
             // base
@@ -708,8 +709,8 @@ function motorXY(){
             // wall support
             cube({size:[9,_nemaXYZ+6,20]}),
             //top and back fix
-            cube({size:[_wallThickness+9,_nemaXYZ+6,thickness]}).translate([-_wallThickness,0,20]),
-            cube({size:[thickness,_nemaXYZ+6,20+thickness]}).translate([-_wallThickness-thickness,0,0]),
+            cube({size:[_wallThickness+9.2,_nemaXYZ+6,thickness]}).translate([-_wallThickness-clearance,0,20]),
+            cube({size:[thickness,_nemaXYZ+6,20+thickness]}).translate([-_wallThickness-thickness-clearance,0,0]),
             // rod support - half slotted hole
             cylinder({r:_XYrodsDiam/2+4,h:21,fn:_globalResolution}).rotateX(90).translate([20,_nemaXYZ+6,-3]),
             cube({size:[20,20,_XYrodsDiam/2]}).translate([0,_nemaXYZ+6-20,2]),
@@ -722,7 +723,7 @@ function motorXY(){
         cube({size:[10,10,10]}).translate([_nemaXYZ/2,22.3,0]),
         cube({size:[11.3*2,11.3*2,15]}).translate([_nemaXYZ/2,_nemaXYZ/2-11.3,-5]),
         // round
-        roundBoolean2(5,_nemaXYZ+6,"br").translate([-_wallThickness-thickness,0,thickness+15]),
+        roundBoolean2(5,_nemaXYZ+6,"br").translate([-_wallThickness-thickness-clearance,0,thickness+15]),
         //  holes to fix on the wood side - version simple
         // wood screw holes
         cylinder({r:2.1,h:20,fn:_globalResolution}).rotateX(-90).rotateZ(90).translate([-_wallThickness,6,5]),
@@ -798,7 +799,7 @@ function bearingsXY(){
     
     if(output==1){
         mesh = union(
-            mesh.setColor(0,0.6,0),
+            mesh.setColor(0.2,0.7,0.2),
             bearing608z().translate([bearingHoleOffsetX,Y/2,10.5]),
             bearing608z().translate([bearingHoleOffsetX,Y/2,21.5])
         );
@@ -1687,11 +1688,16 @@ switch(output){
         ];
     break;
     case 5:
-        res = [
+        res = [];
+        if (_exportReady == 1) {
+            res.push(motorXY().rotateX(-90));
+            res.push(motorXY().mirroredX().rotateX(-90));
+            makeplate(res);
+        } else {
             //_rods(),
             //_nema().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
-            motorXY()
-        ];
+            res.push(motorXY());
+        }
     break;
     case 6:
         res = [];
