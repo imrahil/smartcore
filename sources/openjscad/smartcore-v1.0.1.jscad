@@ -62,7 +62,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12], 
-        initial: 5, 
+        initial: 7, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -452,24 +452,24 @@ function slideY(side){
     if (side == "right") {
        mesh = union(
             mesh,
-            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]),
-            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+7.5]),
+            cylinder({r1:6,r2:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]),
+            cylinder({r1:5,r2:6,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+7.5]),
             
-            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+9.5]),
-            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+11+7.5])
+            cylinder({r1:6,r2:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+11]),
+            cylinder({r1:5,r2:6,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+11+7.5])
         );
     } else {
        mesh = union(
             mesh,
-            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+7.5]),
-            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+9.5]),
+            cylinder({r1:5,r2:6,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+7.5]),
+            cylinder({r1:6,r2:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11]),
             
-            cylinder({r:5,h:2,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+7.5]),
-            cylinder({r:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ])
+            cylinder({r1:5,r2:6,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+7.5]),
+            cylinder({r1:6,r2:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ])
         );
     }
 
-    // long bearing hole
+    // long, vertical bearing hole
     if (side == "right") {
        mesh = difference(
             mesh,
@@ -529,7 +529,7 @@ function slideY(side){
     }
 */
 
-    if(output==1 || output == 7){
+    if((output==1 || output == 7) && _exportReady != 1){
         if (side == "right") {
             mesh = union(
                     mesh,
@@ -713,8 +713,9 @@ function motorXY(){
             cube({size:[thickness,_nemaXYZ+6,20+thickness]}).translate([-_wallThickness-thickness-clearance,0,0]),
             // rod support - half slotted hole
             cylinder({r:_XYrodsDiam/2+4,h:21,fn:_globalResolution}).rotateX(90).translate([20,_nemaXYZ+6,-3]),
+            cylinder({r:thickness+2+3,h:21,fn:_globalResolution}).rotateX(90).translate([20,_nemaXYZ+6,-3]),
             cube({size:[20,20,_XYrodsDiam/2]}).translate([0,_nemaXYZ+6-20,2]),
-            cube({size:[_XYrodsDiam*2-2,10,8]}).translate([0,_nemaXYZ-4,0]).rotateY(34.5)
+            cube({size:[_XYrodsDiam*2-2,10,8]}).translate([0,_nemaXYZ-4,0]).rotateY(37.75)
         ),
         nemaHole(_nemaXYZ).translate([_nemaXYZ/2,_nemaXYZ/2,-1]),
         // rod support hole
@@ -734,9 +735,6 @@ function motorXY(){
     
     return mesh.setColor(0.2,0.7,0.2);
 }
-
-
-
 
 
 function bearingsXY(){
@@ -977,19 +975,6 @@ function clipGlassFront(){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 //  ----------   non printed elements ------------
 
 function fakeJhead(){
@@ -1010,8 +995,6 @@ function fake_switch(){
 
 
 function _walls(){
-
-
     return union(
         //left 
         cube({size:[_wallThickness,_globalDepth+_wallThickness,_globalHeight]}).translate([-_globalWidth/2-_wallThickness,-_globalDepth/2,0]).setColor(1,0.5,0.3),
@@ -1044,12 +1027,12 @@ function wallSizeText(){
 
 function _rodsXY() {
     var offsetFromTopY = 23;
-    var offsetFromTopX = 25;
+    var offsetFromTopX = 22 - 15/2;
     return union(
         // rod X right
-        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-_globalWidth/2+55,XaxisOffset+40-3+_XYrodsDiam/2,_globalHeight-offsetFromTopX+_XYrodsDiam]).setColor(0.3,0.3,0.3, 0.5),
+        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-_globalWidth/2+55,XaxisOffset+40-3+_XYrodsDiam/2,_globalHeight-offsetFromTopX]).setColor(0.3,0.3,0.3, 0.5),
         // rod x left
-        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-_globalWidth/2+55,XaxisOffset+_XYrodsDiam/2+3,_globalHeight-offsetFromTopX+_XYrodsDiam]).setColor(0.3,0.3,0.3),
+        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-_globalWidth/2+55,XaxisOffset+_XYrodsDiam/2+3,_globalHeight-offsetFromTopX]).setColor(0.3,0.3,0.3),
         
         // rod y left
         cylinder({r:_XYrodsDiam/2,h:YrodLength,fn:_globalResolution}).rotateX(90).translate([-_globalWidth/2+20,_globalDepth/2-5,_globalHeight-offsetFromTopY]).setColor(0.3,0.3,0.3),
@@ -1708,11 +1691,19 @@ switch(output){
         }
     break;
     case 7:
-        res = [
-            _rods().translate([_globalWidth/2-6,-XaxisOffset,-_globalHeight+22]),
-            slideY("right"),
-            slideY("left").mirroredX().translate([130,0,0])
-        ];
+        if (_exportReady == 1) {
+            res = [
+                //slideY("left").rotateX(90)
+                slideY("right").mirroredX().rotateX(90)
+            ];
+            makeplate(res);
+        } else {
+            res = [
+                _rods().translate([_globalWidth/2-6,-XaxisOffset,-_globalHeight+22]),
+                slideY("right"),
+                slideY("left").mirroredX().translate([130,0,0])
+            ];
+        }
     break;
     case 8:
         res = [zTop()];
