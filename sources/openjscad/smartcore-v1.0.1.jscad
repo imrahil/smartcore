@@ -62,7 +62,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12,13], 
-        initial: 11, 
+        initial: 5, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -594,6 +594,7 @@ function motorXY(){
     var thickness = 5;
     var mesh;
     var clearance = 0.2;
+    var rodOffset = 21;
     mesh = difference(
         union(
             // base
@@ -604,14 +605,14 @@ function motorXY(){
             cube({size:[_wallThickness+9.2,_nemaXYZ+6,thickness]}).translate([-_wallThickness-clearance,0,20]),
             cube({size:[thickness,_nemaXYZ+6,20+thickness]}).translate([-_wallThickness-thickness-clearance,0,0]),
             // rod support - half slotted hole
-            cylinder({r:_XYrodsDiam/2+4,h:21,fn:_globalResolution}).rotateX(90).translate([20,_nemaXYZ+6,-3]),
-            cylinder({r:thickness+2+3,h:21,fn:_globalResolution}).rotateX(90).translate([20,_nemaXYZ+6,-3]),
-            cube({size:[20,20,_XYrodsDiam/2]}).translate([0,_nemaXYZ+6-20,2]),
-            cube({size:[_XYrodsDiam*2-2,10,8]}).translate([0,_nemaXYZ-4,0]).rotateY(37.75)
+            cylinder({r:_XYrodsDiam/2+4,h:21,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+6,-3]),
+            cylinder({r:thickness+2+3,h:21,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+6,-3]),
+            cube({size:[rodOffset,rodOffset,_XYrodsDiam/2]}).translate([0,_nemaXYZ+6-rodOffset,2]),
+            cube({size:[_XYrodsDiam*2-2,10,8]}).translate([0,_nemaXYZ-4,0]).rotateY(36)
         ),
         nemaHole(_nemaXYZ).translate([_nemaXYZ/2,_nemaXYZ/2,-1]),
         // rod support hole
-        cylinder({r:_XYrodsDiam/2,h:24,fn:_globalResolution}).rotateX(90).translate([20,_nemaXYZ+10,-3]),
+        cylinder({r:_XYrodsDiam/2,h:24,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+10,-3]),
         //extra bool for printable
         cube({size:[10,10,10]}).translate([_nemaXYZ/2,22.3,0]),
         cube({size:[11.3*2,11.3*2,15]}).translate([_nemaXYZ/2,_nemaXYZ/2-11.3,-5]),
@@ -950,14 +951,14 @@ function _rodsZ() {
 }
 
 function _rods() {
-    return union(_rodsXY());//,_rodsZ());    	
+    return union(_rodsXY(),_rodsZ());    	
 }
 
 function rodsLengthText(){
     var offsetFromTopY = 14;
     var offsetFromTopX = -5;
     return union(
-    //x 
+        //x 
         text3d("rod X: "+XrodLength.toString()).scale(0.5).translate([-_globalWidth/2+55,XaxisOffset-10,_globalHeight-offsetFromTopX+5]).setColor(0.3,0.3,0.2),
         // y
         text3d("rod Y: "+YrodLength.toString()).scale(0.5).rotateZ(90).translate([-_globalWidth/2+20,_globalDepth/2-100,_globalHeight-offsetFromTopY+5]).setColor(0.3,0.3,0.2),
@@ -965,26 +966,52 @@ function rodsLengthText(){
         text3d("rod Z: "+ZrodLength.toString()).scale(0.5).rotateX(90).translate([-_ZrodsWidth/2+10,_globalDepth/2-_wallThickness-10,_globalHeight/2-40]).setColor(0.3,0.3,0.2),
         // belt
         text3d("belt length xy: " + ((XrodLength + beltXAddon)*4 + (YrodLength + beltYAddon)*4)).scale(0.5).translate([-_globalWidth/2+55,XaxisOffset-50,_globalHeight-offsetFromTopX+5]).setColor(0.9,0.3,0.2)
-        );
-
+    );
 }
 
 function _nema(){
-    return union(
+    return _nemaBase(1);
+}
+
+function _nemaWithoutPulley(){
+    return _nemaBase(0);
+}
+
+function _nemaBase(addPulley){
+    var offset = ((_nemaXYZ==35) ? 26 : 31) / 2;
+    var shaftWidth = 24;
+    
+    mesh = union(
         cube({size:_nemaXYZ}).setColor(0.3,0.3,1.0),
         cylinder({r:11,h:2,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ]),
-        cylinder({r:2.5,h:25,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2]),
-        
-        //HTD gear
-        cylinder({r:13/2,h:20.6,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+25-20.6]),
-        cylinder({r:19.1/2,h:12.8,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+25-12.8])
+        cylinder({r:2,h:shaftWidth,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2])
     );
+    
+    //GT2 20T gear
+    if (addPulley == 1){
+        mesh = union (
+            mesh,
+            cylinder({r:16/2,h:1,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+shaftWidth-1]),
+            cylinder({r:12.5/2,h:8,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+shaftWidth-9]),
+            cylinder({r:16/2,h:5,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+shaftWidth-14])
+        );
+    }
+
+
+    mesh = difference(
+        mesh,
+        cylinder({r:1.5,h:5,fn:_globalResolution}).translate([_nemaXYZ/2-offset,_nemaXYZ/2+offset,_nemaXYZ-4]),
+        cylinder({r:1.5,h:5,fn:_globalResolution}).translate([_nemaXYZ/2+offset,_nemaXYZ/2+offset,_nemaXYZ-4]),
+        cylinder({r:1.5,h:5,fn:_globalResolution}).translate([_nemaXYZ/2-offset,_nemaXYZ/2-offset,_nemaXYZ-4]),
+        cylinder({r:1.5,h:5,fn:_globalResolution}).translate([_nemaXYZ/2+offset,_nemaXYZ/2-offset,_nemaXYZ-4])
+    );
+
+    return mesh;
 }
 
 function _bed(){
     var mesh = difference(
         cube({size:[_printableWidth/2,_printableDepth+30,3]}).setColor(0.8,0.8,0.4,0.5)
-
     );
     mesh.properties.clipbackleft = new CSG.Connector([0, _printableDepth, 0], [1, 0, 0], [0, 0, 1]);
     mesh.properties.clipbackright = new CSG.Connector([_printableWidth, _printableDepth, 0], [1, 0, 0], [0, 0, 1]);
@@ -1121,7 +1148,6 @@ function Gt2Holder(boolOffset,height){
             cube([1,1,h-3]).translate([h-5,boolOffset+beltThickness,3]),
             cube([1,1,h-3]).translate([h-3,boolOffset+beltThickness,3]),
             cube([1,1,h-3]).translate([h-1,boolOffset+beltThickness,3])
-
         )
     )
 }
@@ -1139,7 +1165,6 @@ function Gt2HolderSuspendedRight(boolOffset,height){
             cube([1,1,h-3]).translate([h-5,boolOffset+beltThickness,3]),
             cube([1,1,h-3]).translate([h-3,boolOffset+beltThickness,3]),
             cube([1,1,h-3]).translate([h-1,boolOffset+beltThickness,3])
-
         )
     )
 }
@@ -1157,7 +1182,6 @@ function Gt2HolderSuspendedLeft(boolOffset,height){
             cube([1,1,h-3]).translate([h-5,boolOffset+beltThickness,3]),
             cube([1,1,h-3]).translate([h-3,boolOffset+beltThickness,3]),
             cube([1,1,h-3]).translate([h-1,boolOffset+beltThickness,3])
-
         )
     )
 }
@@ -1167,13 +1191,13 @@ function Gt2HolderBool(boolOffset,height){
     var beltThickness = 0.9;
     if(height){h=height;}
     return union(
-            cube([10,1,h-3]).translate([h-10,boolOffset,3]),
-            cube([1,1,h-3]).translate([h-9,boolOffset+beltThickness,3]),
-            cube([1,1,h-3]).translate([h-7,boolOffset+beltThickness,3]),
-            cube([1,1,h-3]).translate([h-5,boolOffset+beltThickness,3]),
-            cube([1,1,h-3]).translate([h-3,boolOffset+beltThickness,3]),
-            cube([1,1,h-3]).translate([h-1,boolOffset+beltThickness,3])
-        )
+        cube([10,1,h-3]).translate([h-10,boolOffset,3]),
+        cube([1,1,h-3]).translate([h-9,boolOffset+beltThickness,3]),
+        cube([1,1,h-3]).translate([h-7,boolOffset+beltThickness,3]),
+        cube([1,1,h-3]).translate([h-5,boolOffset+beltThickness,3]),
+        cube([1,1,h-3]).translate([h-3,boolOffset+beltThickness,3]),
+        cube([1,1,h-3]).translate([h-1,boolOffset+beltThickness,3])
+    )
 }
 
 function Gt2Holder3(boolOffset,height){
@@ -1195,7 +1219,6 @@ function Gt2Holder3(boolOffset,height){
 function Gt2Holder2(){
     var beltThickness = 0.9;
     return difference(
-
         linear_extrude({height:23},polygon({points:[[0,0],[16,0],[12,10],[4,10]]})).translate([-12,0,-10]).rotateY(-90).rotateX(90),
         union(
             cube([23,1,7]).translate([-13,3,3]),
@@ -1211,7 +1234,6 @@ function Gt2Holder2(){
             cube([1,1,7]).translate([7,3+beltThickness,3]),
             cube([1,1,7]).translate([9,3+beltThickness,3]),
             cube([1,1,7]).translate([11,3+beltThickness,3])
-
         )
     )
 }
@@ -1222,7 +1244,6 @@ function endstop_meca(){
         cylinder({r:1.5,h:8,fn:_globalResolution}).translate([2.5,2.5,0]),
         cylinder({r:1.5,h:8,fn:_globalResolution}).translate([2.5+14,2.5,0]),
         cylinder({r:1.5,h:8,fn:_globalResolution}).translate([40-2.5,2.5,0])
-
     );
 }
 
@@ -1349,17 +1370,18 @@ switch(output){
         clipGlassFrontLeft = clipGlassFrontLeft.connectTo(clipGlassFrontLeft.properties.connect1,bed.properties.clipfrontleft,false,0);
         clipGlassFrontRight = clipGlassFrontRight.connectTo(clipGlassFrontRight.properties.connect1,bed.properties.clipfrontright,true,0);
 */
-        res = [  _nema().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
-        motorXY().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-20]),
-                slideY().translate([-_globalWidth/2+6,XaxisOffset,_globalHeight-22]),
-                _rods(),
-                bearingsXY().rotateZ(-90).translate([-_globalWidth/2+_wallThickness+18,_globalDepth/2+_wallThickness+5,_globalHeight-17])];
+        res = [  
+            _nema().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
+            motorXY().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-20]),
+            slideY().translate([-_globalWidth/2+6,XaxisOffset,_globalHeight-22]),
+            _rods(),
+            bearingsXY().rotateZ(-90).translate([-_globalWidth/2+_wallThickness+18,_globalDepth/2+_wallThickness+5,_globalHeight-17])
+        ];
         //res.push(JheadAttach().translate([headoffset-13,XaxisOffset-12,_globalHeight]));
         
         //res.push(fakeJhead().translate([headoffset+23,XaxisOffset-12,_globalHeight-38]).setColor(0.2,0.2,0.2));
     break;
     case 1:
-        
         res = [
             _walls(),
             
@@ -1388,15 +1410,14 @@ switch(output){
             }
             
             // Z stage 
-            zres = new Array();                    
-            // z threaded rod
-            zres.push(cylinder({r:_ZscrewDiam/2,h:ZrodLength-_nemaXYZ-20,fn:_globalResolution}).translate([0,_globalDepth/2-25,20+_nemaXYZ]).setColor(0.9,0.3,0.3));
-            zres.push(_nema().rotateX(0).translate([-_nemaXYZ/2,_globalDepth/2-_nemaXYZ-4,4]));
-            zres.push(zTop().translate([0,_globalDepth/2,_globalHeight-35]));
-            zres.push(zBottom().translate([0,_globalDepth/2,_nemaXYZ+4]));                    
-            zres.push(slideZ2().translate([-_ZrodsWidth/2,_globalDepth/2-15,_globalHeight/2-30]));        
-            // zres.push(_bed().translate([-_printableWidth/4,-_printableDepth/2,_globalHeight/2+10]));                    
-            
+            zres = [                    
+                cylinder({r:_ZscrewDiam/2,h:ZrodLength-_nemaXYZ-20,fn:_globalResolution}).translate([0,_globalDepth/2-25,20+_nemaXYZ]).setColor(0.9,0.3,0.3),
+                _nemaWithoutPulley().rotateX(0).translate([-_nemaXYZ/2,_globalDepth/2-_nemaXYZ-4,4]),
+                zTop().translate([0,_globalDepth/2,_globalHeight-35]),
+                zBottom().translate([0,_globalDepth/2,_nemaXYZ+4]),                    
+                slideZ2().translate([-_ZrodsWidth/2,_globalDepth/2-15,_globalHeight/2-30])        
+                // _bed().translate([-_printableWidth/4,-_printableDepth/2,_globalHeight/2+10]);                    
+            ];
             res.push(union(zres));
 
             
@@ -1509,15 +1530,18 @@ switch(output){
         ];
     break;
     case 5:
-        res = [];
         if (_exportReady == 1) {
-            res.push(motorXY().rotateX(-90));
-            res.push(motorXY().mirroredX().rotateX(-90));
+            res = [
+                motorXY().rotateX(-90),
+                motorXY().mirroredX().rotateX(-90)
+            ];
             makeplate(res);
         } else {
-            //_rods(),
-            //_nema().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
-            res.push(motorXY());
+            res = [
+                //_rods(),
+                _nema().translate([0,0,-_nemaXYZ]),
+                motorXY()
+            ];
         }
     break;
     case 6:
