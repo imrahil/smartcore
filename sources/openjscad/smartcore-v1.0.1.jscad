@@ -29,7 +29,7 @@ var _ZscrewDiam = 8;
 var _ZlmDiam; // lm6uu, lm8uu ... will be calculated from rods diam
 var _nemaXYZ;  // nema 14 , nema 17 
 var _XrodsWidth=40; //space between rods on X axis
-var _ZrodsWidth=60; //space between rods on Z axis
+var _ZrodsWidth=120; //space between rods on Z axis
 var _extrusionType = 0; // 0 bowden 1 direct
 var XrodLength = 300; // will be calculated in main from parameters.
 var YrodLength = 300; // will be calculated in main from parameters.
@@ -49,6 +49,8 @@ var XaxisOffset = 0; // used to palce the X axis on Y
 var _ZaxisOffset = -30; // used to place Z stage.
 var endxJheadAttachHolesWidth = 32; // tempo.. 
 
+var nutRadius = 15/2; // M8 nut radius
+
 var output; // show hide objects  from output choosen in the parameters.
 
 
@@ -62,7 +64,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12,13], 
-        initial: 5, 
+        initial: 1, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -80,7 +82,7 @@ function getParameterDefinitions() {
                     "extruder" //13
                     ]
     },
-    { name: '_globalResolution', caption: 'output resolution (16, 24, 32)', type: 'int', initial: 16 },   
+    { name: '_globalResolution', caption: 'output resolution (16, 24, 32)', type: 'int', initial: 4 },   
   
     { name: '_printableWidth', caption: 'Print width:', type: 'int', initial: 185 },
     { name: '_printableHeight', caption: 'Print height :', type: 'int', initial: 210 },
@@ -176,41 +178,6 @@ function zBottom(){
 
 function slideZ(){
     var width = _ZrodsWidth-5;
-    var height = 15;
-    var depth = 5;
-    var insideWidth = 35;
-
-	return difference(
-		//main form
-		union(
-			cube({size:[width,depth,height]}).setColor(0.2,0.7,0.2),
-
-			Gt2Holder(3,10).rotateX(90).rotateY(90).translate([width/2-10,1,height-5]).setColor(0.2,0.7,0.2),
-
-			//Gt2Holder(3).rotateX(90).rotateY(90).translate([width/2-10,1,10]).setColor(0.2,0.7,0.2),
-			// lm8uu holes
-			cylinder({r:_ZlmDiam/2+3,h:height,fn:_globalResolution}).translate([0,0,0]).setColor(0.2,0.7,0.2),
-			cylinder({r:_ZlmDiam/2+3,h:height,fn:_globalResolution}).translate([_ZrodsWidth,0,0]).setColor(0.2,0.7,0.2),
-			// side forms for lm8 attach
-			cube({size:[13,10,height]}).translate([_ZrodsWidth+_ZlmDiam/2,-5,0]).setColor(0.2,0.7,0.2),
-			cube({size:[13,10,height]}).translate([-13-_ZlmDiam/2,-5,0]).setColor(0.2,0.7,0.2)
-
-		),
-
-		// z rod left linear bearing lm
-		cylinder({r:_ZlmDiam/2,h:height,fn:_globalResolution}).translate([0,0,0]),
-		//z rod right linear bearing lm
-		cylinder({r:_ZlmDiam/2,h:height,fn:_globalResolution}).translate([_ZrodsWidth,0,0]),
-		//side holes
-		cylinder({r:1.3,h:16,fn:_globalResolution}).rotateY(90).translate([_ZrodsWidth+_ZlmDiam/2,0,height/2]),
-		cylinder({r:1.3,h:16,fn:_globalResolution}).rotateY(90).translate([-13-_ZlmDiam/2,0,height/2])
-
-	);
-
-}
-
-function slideZ2(){
-    var width = _ZrodsWidth-5;
     var height = 40;
     var depth = 5;
     var insideWidth = 35;
@@ -219,7 +186,6 @@ function slideZ2(){
     var side_form_size = lmXuu_support_r + side_plate_size;
     // lmXuu set screws offset
     var set_screw_offset = lmXuu_support_r + side_plate_size / 2 - 1;
-    var nutRadius = 15/2;
 	
     return difference(
         //main form
@@ -315,11 +281,11 @@ function slideY(side){
 
     var Y = 50;
     var Z = 40;
-    var bearingsOffsetZ = 15;
+    var bearingsOffsetZ = 16;
     var bearingsOffsetX = 20;
     var bearingsOffsetY = 9.5;
     var bearingHoleOffsetX = bearingsOffsetX+12;
-    var X = 40;
+    var X = 35;
     var xrodOffsetZ = 18;
     mesh =         
         union(
@@ -327,23 +293,26 @@ function slideY(side){
                 //main
                 cube({size:[X,Y,Z]}).translate([15,0,0]),
                 // support bearings
-                cube({size:[X,Y,8]}).translate([6.5,0,bearingsOffsetZ]),
-                cube({size:[X,Y,8]}).translate([6.5,0,bearingsOffsetZ+11])
+                cube({size:[X,Y,8]}).translate([10,0,bearingsOffsetZ]),
+                cube({size:[X,Y,8]}).translate([10,0,bearingsOffsetZ+11])
             ),
             cube({size:[X+10,Y/2,Z-(bearingsOffsetZ+11+8)]}).translate([15-10,0,bearingsOffsetZ+11+8]),
             cube({size:[X+10,Y/2,3]}).translate([15-10,0,bearingsOffsetZ+8]),
             cube({size:[X+10,Y,bearingsOffsetZ]}).translate([15-10,0,0]),
-            cube({size:[bearingsOffsetX,Y/2,8]}).translate([X-10,0,bearingsOffsetZ]),
+            cube({size:[bearingsOffsetX,Y/2,19]}).translate([X-8,0,bearingsOffsetZ]),
 
             //extra rod Y support
-            cylinder({r:_XYlmDiam/2+3,h:Y,fn:_globalResolution}).rotateX(-90).translate([14,0,-1]),
-            cube({size:[15,Y,6]}).translate([-5,0,-6])
+            cylinder({r:_XYlmDiam/2+3,h:Y,fn:_globalResolution}).rotateX(-90).translate([14,0,0]),
+            cube({size:[15,Y,6]}).translate([-4,0,-3])
         );
 
     // round bearings supports in middle
     if (side == "right") {
        mesh = union(
             mesh,
+            // additional block for support
+            cube({size:[bearingsOffsetX,Y/2,8]}).translate([X-8,Y/2,bearingsOffsetZ+11]),
+
             cylinder({r1:6,r2:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]),
             cylinder({r1:5,r2:6,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+7.5]),
             
@@ -353,6 +322,9 @@ function slideY(side){
     } else {
        mesh = union(
             mesh,
+            // additional block for support
+            cube({size:[bearingsOffsetX,Y/2,8]}).translate([X-8,Y/2,bearingsOffsetZ]),
+
             cylinder({r1:5,r2:6,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+7.5]),
             cylinder({r1:6,r2:5,h:0.5,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11]),
             
@@ -365,14 +337,16 @@ function slideY(side){
     if (side == "right") {
        mesh = difference(
             mesh,
-            cylinder({r:7/2,h:Z+4,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,-2]),
-            cylinder({r:7/2,h:Z,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ])
+            cylinder({r:8/2,h:Z+4,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,-2]),
+            cylinder({r:8/2,h:Z,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ]),
+            cylinder({r:nutRadius,h:10,fn:6}).rotateZ(90).translate([bearingHoleOffsetX,Y-bearingsOffsetY,-3])
         );
     } else {
        mesh = difference(
             mesh,
-            cylinder({r:7/2,h:Z,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]).setColor(1,0,0),
-            cylinder({r:7/2,h:Z+4,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,2])
+            cylinder({r:8/2,h:Z,fn:_globalResolution}).translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ]),
+            cylinder({r:8/2,h:Z+4,fn:_globalResolution}).translate([bearingHoleOffsetX-18,bearingsOffsetY,2]),
+            cylinder({r:nutRadius,h:10,fn:6}).rotateZ(90).translate([bearingHoleOffsetX,Y-bearingsOffsetY,-3])
         );
     }
 
@@ -392,16 +366,16 @@ function slideY(side){
         //cylinder({r:1.3,h:12,fn:_globalResolution}).rotateX(90).translate([X+12,Y+1,13]),
         
         // rod Y bearing bool
-        cylinder({r:_XYlmDiam/2+0.1,h:Y+5,fn:_globalResolution}).rotateX(-90).translate([14,0,-1]),
+        cylinder({r:_XYlmDiam/2+0.1,h:Y+5,fn:_globalResolution}).rotateX(-90).translate([14,0,0]),
         // rod Y support slice boolean 
-        cube({size:[15,Y,1]}).translate([-5,0,-3.5]),
+        cube({size:[15,Y,1]}).translate([-5,0,-0.5]),
         // screws for rod Y support
-        cylinder({r:1.3,h:10,fn:_globalResolution}).translate([-1,10,-9]),
-        cylinder({r:1.3,h:10,fn:_globalResolution}).translate([-1,Y-10,-9]),
+        cylinder({r:1.3,h:10,fn:_globalResolution}).translate([0,10,-5]),
+        cylinder({r:1.3,h:10,fn:_globalResolution}).translate([0,Y-10,-5]),
         
         // Xrods hole bottom
-        cylinder({r:_XYrodsDiam/2,h:8,fn:_globalResolution}).rotateY(90).translate([X+7,Y-(_XYrodsDiam/2+3),15/2]),
-        cylinder({r:_XYrodsDiam/2,h:8,fn:_globalResolution}).rotateY(90).translate([X+7,_XYrodsDiam/2+3,15/2]),
+        cylinder({r:_XYrodsDiam/2,h:10,fn:_globalResolution}).rotateY(90).translate([X+5,Y-(_XYrodsDiam/2+3),15/2]),
+        cylinder({r:_XYrodsDiam/2,h:10,fn:_globalResolution}).rotateY(90).translate([X+5,_XYrodsDiam/2+3,15/2]),
         
         // screw to attach the rod left
         cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([X+12,0,15/2]),
@@ -424,15 +398,15 @@ function slideY(side){
     if((output==1 || output == 7) && _exportReady != 1){
         if (side == "right") {
             mesh = union(
-                    mesh,
-                    bearing608z().translate([bearingHoleOffsetX,Y-bearingsOffsetY,15.5]),
-                    bearing608z().translate([bearingHoleOffsetX-18,bearingsOffsetY,26.5])
+                    mesh.setColor(0.2,0.7,0.2),
+                    bearing608z().translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+0.5]),
+                    bearing608z().translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+11+0.5])
             );
         } else {
             mesh = union(
-                    mesh,
-                    bearing608z().translate([bearingHoleOffsetX-18,bearingsOffsetY,15.5]),
-                    bearing608z().translate([bearingHoleOffsetX,Y-bearingsOffsetY,26.5])
+                    mesh.setColor(0.2,0.7,0.2),
+                    bearing608z().translate([bearingHoleOffsetX-18,bearingsOffsetY,bearingsOffsetZ+0.5]),
+                    bearing608z().translate([bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+0.5])
             );
         }
     }
@@ -440,161 +414,12 @@ function slideY(side){
     return mesh;
 }
 
-function headLeft(){
-    var mesh;
-    var X = 17;
-    var Y = 20;
-    var Z = 43;
-    var xrodOffset = 18;
-
-    mesh = difference(
-        
-        union(
-            cube({size:[X,Y,Z]}),
-            //gt2 holders 
-            Gt2HolderSuspendedLeft(3).translate([0,-5,Z-24]),
-            Gt2HolderSuspendedRight(3).translate([0,17,Z-14]),
-            // support for endstop X
-            cube({size:[10,10,10]}).translate([0,17,5])
-        ),
-        //rod x holes
-        cylinder({r:_XYlmDiam/2,h:X,fn:_globalResolution}).rotateY(90).translate([0,Y/2,15]),
-        cylinder({r:_XYlmDiam/2,h:X,fn:_globalResolution}).rotateY(90).translate([0,Y/2,15+xrodOffset]),
-        // head attach holes 
-         cylinder({r:1.3,h:22,fn:_globalResolution}).rotateX(-90).translate([13,0,40]),
-         cylinder({r:1.3,h:22,fn:_globalResolution}).rotateX(-90).translate([13,0,23]),
-         // rodx extra to ease insert
-        cube({size:[X,1,Z]}).translate([0,Y/2-1,-10]),
-        // screw to fix rodx guides
-        cylinder({r:1.6,h:Y/2,fn:_globalResolution}).rotateX(-90).translate([X/2,0,4]),
-        cylinder({r:1.3,h:Y/2,fn:_globalResolution}).rotateX(-90).translate([X/2,Y/2,4])      
-
-    );
-    return mesh;
-
-}
-
-function headRight(){
-    var mesh;
-    var X = 17;
-    var Y = 20;
-    var Z = 43;
-    var xrodOffset = 18;
-
-    mesh = difference(
-        
-        union(
-            cube({size:[X,Y,Z]}),
-            //gt2 holders 
-            Gt2HolderSuspendedLeft(3).translate([X-10,-5,Z-14]),
-            Gt2HolderSuspendedRight(3).translate([X-10,17,Z-24]) 
-        ),
-        //rod x holes
-        cylinder({r:_XYlmDiam/2,h:X,fn:_globalResolution}).rotateY(90).translate([0,Y/2,15]),
-        cylinder({r:_XYlmDiam/2,h:X,fn:_globalResolution}).rotateY(90).translate([0,Y/2,15+xrodOffset]),
-        // head attach holes 
-         cylinder({r:1.3,h:22,fn:_globalResolution}).rotateX(-90).translate([3,0,40]),
-         cylinder({r:1.3,h:22,fn:_globalResolution}).rotateX(-90).translate([3,0,23]),
-
-        cube({size:[X,1,Z]}).translate([0,Y/2-1,-10]) ,
-        // screw to fix rodx guides
-        cylinder({r:1.3,h:Y/2,fn:_globalResolution}).rotateX(-90).translate([X/2,0,4]),
-        cylinder({r:1.6,h:Y/2,fn:_globalResolution}).rotateX(-90).translate([X/2,Y/2,4])     
-
-    );
-    return mesh;
-
-}
-
-function HeadSupportJhead(){
-    var width = 40;
-    var height = 35;
-    var depth = 15;
-    var extDiam=15.1;
-    var intDiam=12.1;
-    var intDiamHeight=5;
-    return difference(
-        union(
-            //base
-            cube({size:[28,5,height]}).translate([(width-28)/2,0,0]),
-            // top
-            cube({size:[width,depth,8]}).translate([0,0,height-8])
-            
-        ),
-        // jhead holes 
-         cylinder({r:extDiam/2+0.1,h:height-5,fn:_globalResolution}).translate([width/2,depth+1,0]),
-         cylinder({r:intDiam/2+0.1,h:intDiamHeight,fn:_globalResolution}).translate([width/2,depth+1,height-5]),
-         cylinder({r:13,h:height-10,fn:_globalResolution}).translate([width/2,depth+1,0]),
-         // jhead attach holes 
-         cylinder({r:1.3,h:30,fn:_globalResolution}).rotateX(-90).translate([width/2-endxJheadAttachHolesWidth/2,0,height-4]),
-         cylinder({r:1.3,h:30,fn:_globalResolution}).rotateX(-90).translate([width/2+endxJheadAttachHolesWidth/2,0,height-4]),
-
-         // head attach holes 
-         slottedHole(3.2,8,10).rotateX(90).translate([width/2-11,depth-5,5]),
-         slottedHole(3.2,8,10).rotateX(90).translate([width/2+11,depth-5,5])
-
-
-    );
-}
-
-function JheadAttach(){
-    var extDiam=16;
-    var intDiam=12;
-    var intDiamHeight=5;
-    var depth = 12;
-    var width = 75;
-    var barHeight = 6;
-
-    return difference(
-        union(
-            cube([endxJheadAttachHolesWidth-5,13,8]).translate([width/2-((endxJheadAttachHolesWidth-5)/2),-15,barHeight]),
-            tube(3.2,10,13).rotateX(-90).translate([width/2-endxJheadAttachHolesWidth/2,-15,barHeight+4]),
-            tube(3.2,10,13).rotateX(-90).translate([width/2+endxJheadAttachHolesWidth/2,-15,barHeight+4])
-        ),
-         cylinder({r:extDiam/2,h:10,fn:_globalResolution}).translate([width/2,0,0]),
-         cylinder({r:intDiam/2,h:intDiamHeight,fn:_globalResolution}).translate([width/2,0,10])
-         
-
-    );  
-    }
-
-
-
-function InductiveSensorSupport(){
-    var width = 45;
-    var height = 8;
-    var depth = 12;
-    var extDiam=15.1;
-    var intDiam=12.1;
-    var intDiamHeight=5;
-    return difference(
-        union(
-            //base
-            cube({size:[width,depth,height]}),
-            // inductive support
-            cylinder({r:13,h:height,fn:_globalResolution}).translate([width+10,depth/2,0])
-        ),
-        // jhead holes 
-         cylinder({r:extDiam/2+0.1,h:3,fn:_globalResolution}).translate([width/2,depth,0]),
-         cylinder({r:intDiam/2+0.1,h:intDiamHeight,fn:_globalResolution}).translate([width/2,depth,height-5]),
-         
-         // head attach holes 
-         cylinder({r:1.6,h:13,fn:_globalResolution}).rotateX(-90).translate([width/2-endxJheadAttachHolesWidth/2,0,height/2]),
-        cylinder({r:1.6,h:13,fn:_globalResolution}).rotateX(-90).translate([width/2+endxJheadAttachHolesWidth/2,0,height/2]),
-
-         // inductive support hole
-         cylinder({r:9.1,h:height,fn:_globalResolution}).translate([width+10,depth/2,0]),
-         // hole screw to attach the sensor faster
-         cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([width+10,-10,height/2])
-
-    );
-}
 
 function motorXY(){
     var thickness = 5;
     var mesh;
     var clearance = 0.2;
-    var rodOffset = 21;
+    var rodOffset = 23;
     mesh = difference(
         union(
             // base
@@ -608,7 +433,7 @@ function motorXY(){
             cylinder({r:_XYrodsDiam/2+4,h:21,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+6,-3]),
             cylinder({r:thickness+2+3,h:21,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+6,-3]),
             cube({size:[rodOffset,rodOffset,_XYrodsDiam/2]}).translate([0,_nemaXYZ+6-rodOffset,2]),
-            cube({size:[_XYrodsDiam*2-2,10,8]}).translate([0,_nemaXYZ-4,0]).rotateY(36)
+            cube({size:[_XYrodsDiam*2+3,10,8]}).translate([0,_nemaXYZ-4,0]).rotateY(32.5)
         ),
         nemaHole(_nemaXYZ).translate([_nemaXYZ/2,_nemaXYZ/2,-1]),
         // rod support hole
@@ -639,7 +464,6 @@ function bearingsXY(){
     var bearingsOffsetX = 10+_wallThickness;
     var bearingHoleOffsetX = bearingsOffsetX+14.5;
     var X = 22+_wallThickness;
-    var nutRadius = 15/2;
     
     mesh = difference(
         
@@ -702,192 +526,7 @@ function bearingsXY(){
 }
 
 
-
-
-
-
-// -------------------------------- extruder
-
-function extruder(bowden,part){
-    var X = 50;
-    var Z = 9;
-    var Y = 48; 
-    var bearingoffsetX = 17;
-    
-    var jheadOffsetX = 5;
-    //elastic part
-    var epoffsetX = 3;
-    var epoffsetY = 42;
-    // this is to adjust how elastic will the bearing be.
-    var elasticpartlength = 5;
-    return difference(
-        union(
-            extruderPart(part,X,Y,Z),
-            // extra support in case of bowden
-            extruderSupport(bowden,part)
-        ),
-        nemaHole2().translate([0,2,-Z/2]),
-        
-        // 608 place 
-        difference(
-            cylinder({r:12,h:9,fn:_globalResolution}),
-            cylinder({r:4,h:9,fn:_globalResolution}),
-            cylinder({r:5,h:1,fn:_globalResolution}),
-            cylinder({r:5,h:1,fn:_globalResolution}).translate([0,0,8])
-        ).translate([bearingoffsetX,2,0]),
-        // 608 screw hole to reinforce
-        cylinder({r:1.6,h:10,fn:_globalResolution}).translate([bearingoffsetX,2,Z/2]),
-        cylinder({r:1.35,h:10,fn:_globalResolution}).translate([bearingoffsetX,2,-Z/2]),
-        // jhead or pressfit
-        extruderOut(bowden,jheadOffsetX,Y,Z),
-         
-         // jhead holes : 2 parts. up to pass screws, bottom to fix
-         cylinder({r:1.6,h:10,fn:_globalResolution}).translate([jheadOffsetX-8,Y/2+1,Z/2]),
-         cylinder({r:1.6,h:10,fn:_globalResolution}).translate([jheadOffsetX+8,Y/2+1,Z/2]),
-         cylinder({r:1.35,h:10,fn:_globalResolution}).translate([jheadOffsetX-8,Y/2+1,-Z/2]),
-         cylinder({r:1.35,h:10,fn:_globalResolution}).translate([jheadOffsetX+8,Y/2+1,-Z/2]),
-         
-
-        // filament
-        extruderFilament(bowden,jheadOffsetX,Y,Z),
-
-        
-        // elastic part with two holes
-        cube({size:[2,epoffsetY,2*Z+1]}).translate([jheadOffsetX+epoffsetX,-Y/2,-Z/2]),
-        cube({size:[elasticpartlength,2,2*Z+1]}).translate([jheadOffsetX+epoffsetX,-Y/2+epoffsetY,-Z/2]),
-        // solidify corner
-        cylinder({r:1.5,h:2*Z+2,fn:_globalResolution}).translate([elasticpartlength+7,-Y/2+epoffsetY+1,-Z/2]),
-
-        
-        // attach holes
-         //cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX+5,Y/2-3,0]),
-         //cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX-5,Y/2-3,0]),
-
-         // holes to add screw to maintain the iddle
-         cylinder({r:1.6,h:15,fn:_globalResolution}).rotateY(-90).translate([X/2,-Y/2+10,9]),
-         cylinder({r:1.6,h:15,fn:_globalResolution}).rotateY(-90).translate([X/2,-Y/2+10,0]),
-         cylinder({r:1.35,h:15,fn:_globalResolution}).rotateY(-90).translate([X/2-15,-Y/2+10,9]),
-         cylinder({r:1.35,h:15,fn:_globalResolution}).rotateY(-90).translate([X/2-15,-Y/2+10,0])
-       
-    )
-
-}
-function extruderPart(part,X,Y,Z){
-    // lower part only
-    if(part==0){
-        return cube({size:[X,Y,Z],center:true}).translate([0,5,0])
-    }
-    // uppper part only
-    else if(part==1){
-        return cube({size:[X,Y,Z],center:true}).translate([0,5,Z+0.05])
-    }
-    else {
-        return union(
-            //main bottom
-            cube({size:[X,Y,Z],center:true}).translate([0,5,0]),
-            // main top
-            cube({size:[X,Y,Z],center:true}).translate([0,5,Z+0.05])
-        )
-    }
-}
-
-function extruderSupport(bowden,part){
-    var X = 20;
-    var Z = 15;
-    var Y = 9;
-    if((bowden==1)&&(part!=1)){
-        return difference(
-                //main
-                slottedHole(9,80,5).rotateY(-90).translate([-20,-30,0]),
-                // screws for walls
-                cylinder({r:2.1,h:10,fn:_globalResolution}).rotateY(-90).translate([-20,-29,0]),
-                cylinder({r:2.1,h:10,fn:_globalResolution}).rotateY(-90).translate([-20,40,0])
-            
-        )
-    }
-    else{
-        return cube(1)
-    }
-}
-
-function extruderOut(bowden,jheadOffsetX,Y,Z){
-    var jheadExtDiam = 15.5;
-    var jheadIntDiam = 12.5;
-    if(bowden==0){
-        return union(
-        cylinder({r:jheadExtDiam/2,h:6,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,Y/2,Z/2]),
-        cylinder({r:jheadIntDiam/2,h:4,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,Y/2-4,Z/2]),
-        cylinder({r:jheadExtDiam/2,h:5.5,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,Y/2-9.5,Z/2])
-        )
-    }
-    else if(bowden==1){
-        return cylinder({r:2.7,h:5,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,Y/2,Z/2])
-    }
-
-}
-function extruderFilament(bowden,jheadOffsetX,Y,Z){
-if(bowden==0){
-        return union(
-        cylinder({r:1,h:Y,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,-Y/2,Z/2]),
-        cylinder({r1:3,r2:1,h:5,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,8,Z/2]),
-        cylinder({r:1.5,h:3,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,19,Z/2])
-        )
-    }
-    else if(bowden==1){
-        return union(
-        cylinder({r:1,h:Y,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,-Y/2,Z/2]),
-        cylinder({r1:3,r2:1,h:5,fn:_globalResolution}).rotateX(-90).translate([jheadOffsetX,8,Z/2])
-        )
-    }
-}
-
-
-
-function clipGlassBack(){
-    var glassThickness = 3;
-    var mesh = difference(
-        cube({size:[18,18,5+glassThickness]}),
-        cube({size:[14,14,glassThickness]}).translate([4,4,0]),
-        cube({size:[10,10,5]}).translate([8,8,glassThickness]),
-        cylinder({r1:1.6,r2:3,h:2,fn:_globalResolution}).translate([2.5,2.5,6]),
-        cylinder({r:1.6,h:6,fn:_globalResolution}).translate([2.5,2.5,0])
-
-    );
-    mesh.properties.connect1 = new CSG.Connector([0,0, 0], [1, 0, 0], [0, 0, 1]);
-    return mesh;
-}
-
-function clipGlassFront(){
-    var glassThickness = 3;
-    var bedSupportThickness = 10;
-    var mesh = difference(
-        cube({size:[20,8,bedSupportThickness+glassThickness+10]})
-    )
-    mesh.properties.connect1 = new CSG.Connector([0,0, 0], [1, 0, 0], [0, 0, 1]);
-    return mesh;
-}
-
-
-
-
 //  ----------   non printed elements ------------
-
-function fakeJhead(){
-    return union(
-        cylinder({r:2,h:15,fn:_globalResolution}),
-        cube({size:[20,15,8],center:true}).translate([0,0,8]),
-        cylinder({r:12.5,h:30,fn:_globalResolution}).translate([0,0,15]),
-        cylinder({r:6,h:5,fn:_globalResolution}).translate([0,0,45]),
-        cylinder({r:7.5,h:5,fn:_globalResolution}).translate([0,0,50])
-        
-    );
-}
-
-function fake_switch(){
-    return cube([40,8,15]);
-}
-
-
 
 function _walls(){
     return union(
@@ -921,17 +560,17 @@ function wallSizeText(){
 
 function _rodsXY() {
     var offsetFromTopY = 23;
-    var offsetFromTopX = 22 - 15/2;
+    var offsetFromTopX = 23 - 15/2;
     return union(
         // rod X right
-        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-_globalWidth/2+55,XaxisOffset+40-3+_XYrodsDiam/2,_globalHeight-offsetFromTopX]).setColor(0.3,0.3,0.3, 0.5),
+        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-XrodLength/2,XaxisOffset+40-3+_XYrodsDiam/2,_globalHeight-offsetFromTopX]).setColor(0.3,0.3,0.3, 0.5),
         // rod x left
-        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-_globalWidth/2+55,XaxisOffset+_XYrodsDiam/2+3,_globalHeight-offsetFromTopX]).setColor(0.3,0.3,0.3),
+        cylinder({r:_XYrodsDiam/2,h:XrodLength,fn:_globalResolution}).rotateY(90).translate([-XrodLength/2,XaxisOffset+_XYrodsDiam/2+3,_globalHeight-offsetFromTopX]).setColor(0.3,0.3,0.3),
         
         // rod y left
-        cylinder({r:_XYrodsDiam/2,h:YrodLength,fn:_globalResolution}).rotateX(90).translate([-_globalWidth/2+20,_globalDepth/2-5,_globalHeight-offsetFromTopY]).setColor(0.3,0.3,0.3),
+        cylinder({r:_XYrodsDiam/2,h:YrodLength,fn:_globalResolution}).rotateX(90).translate([-_globalWidth/2+23,_globalDepth/2-5,_globalHeight-offsetFromTopY]).setColor(0.3,0.3,0.3),
         // rod y right
-        cylinder({r:_XYrodsDiam/2,h:YrodLength,fn:_globalResolution}).rotateX(90).translate([_globalWidth/2-20,_globalDepth/2-10,_globalHeight-offsetFromTopY]).setColor(0.3,0.3,0.3)
+        cylinder({r:_XYrodsDiam/2,h:YrodLength,fn:_globalResolution}).rotateX(90).translate([_globalWidth/2-23,_globalDepth/2-10,_globalHeight-offsetFromTopY]).setColor(0.3,0.3,0.3)
     );    
 }
 
@@ -964,9 +603,19 @@ function rodsLengthText(){
         text3d("rod Y: "+YrodLength.toString()).scale(0.5).rotateZ(90).translate([-_globalWidth/2+20,_globalDepth/2-100,_globalHeight-offsetFromTopY+5]).setColor(0.3,0.3,0.2),
         // z
         text3d("rod Z: "+ZrodLength.toString()).scale(0.5).rotateX(90).translate([-_ZrodsWidth/2+10,_globalDepth/2-_wallThickness-10,_globalHeight/2-40]).setColor(0.3,0.3,0.2),
+        text3d("screw Z: "+(ZrodLength-10).toString()).scale(0.5).rotateX(90).translate([-_ZrodsWidth/2+10,_globalDepth/2-_wallThickness-10,_globalHeight/2-70]).setColor(0.3,0.3,0.2),
         // belt
         text3d("belt length xy: " + ((XrodLength + beltXAddon)*4 + (YrodLength + beltYAddon)*4)).scale(0.5).translate([-_globalWidth/2+55,XaxisOffset-50,_globalHeight-offsetFromTopX+5]).setColor(0.9,0.3,0.2)
     );
+}
+
+function _timingPulley(){
+    return union (
+        // timing pulley - height: 14
+        cylinder({r:16/2,h:1,fn:_globalResolution}).translate([0,0,13]),
+        cylinder({r:12.5/2,h:8,fn:_globalResolution}).translate([0,0,5]),
+        cylinder({r:16/2,h:5,fn:_globalResolution})
+    )
 }
 
 function _nema(){
@@ -984,16 +633,14 @@ function _nemaBase(addPulley){
     mesh = union(
         cube({size:_nemaXYZ}).setColor(0.3,0.3,1.0),
         cylinder({r:11,h:2,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ]),
-        cylinder({r:2,h:shaftWidth,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2])
+        cylinder({r:2.5,h:shaftWidth,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2])
     );
     
     //GT2 20T gear
     if (addPulley == 1){
         mesh = union (
             mesh,
-            cylinder({r:16/2,h:1,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+shaftWidth-1]),
-            cylinder({r:12.5/2,h:8,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+shaftWidth-9]),
-            cylinder({r:16/2,h:5,fn:_globalResolution}).translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+shaftWidth-14])
+            _timingPulley().translate([_nemaXYZ/2,_nemaXYZ/2,_nemaXYZ+2+shaftWidth-14])
         );
     }
 
@@ -1341,13 +988,13 @@ function main(params){
     _globalWidth = _printableWidth + 165; // = motor uspport width + bearings width + head width /2
     _globalHeight = _printableHeight + 140; // bottom = 40mm head = 40 mm + extra loose.
 
-    XrodLength = _printableWidth + 55; // 40: slideY width , 3: offset slideY from wall.
+    XrodLength = _printableWidth + 65; // 40: slideY width , 3: offset slideY from wall.
     YrodLength = _printableDepth + 65; // 5: rod support inside parts.
-    ZrodLength = _printableHeight + 110;
+    ZrodLength = _printableHeight + 130;
 
 
     echo("wood depth:"+_globalDepth + " width:"+_globalWidth+" height:"+_globalHeight);
-    echo("X rod length:"+XrodLength + " Y rod length:"+YrodLength+" Zrodlength:"+ZrodLength);
+    echo("X rod length:"+XrodLength + " Y rod length:"+YrodLength+" Zrodlength:"+ZrodLength+" Zscrewlength:"+(ZrodLength-10));
     // calculate some usefull vars
     var ztopbottomX = (_ZrodsWidth+_ZrodsDiam+(_rodsSupportThickness*2))/2;
     var zslideX = (_ZrodsWidth+_ZlmDiam+(_rodsSupportThickness*2))/2;
@@ -1386,23 +1033,21 @@ switch(output){
             _walls(),
             
             //nema left
-            _nema().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
+            _nemaWithoutPulley().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
             // nema right
-            _nema().translate([_globalWidth/2-_nemaXYZ,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
+            _nemaWithoutPulley().translate([_globalWidth/2-_nemaXYZ,-_globalDepth/2,_globalHeight-_nemaXYZ-20]),
 
             motorXY().translate([-_globalWidth/2,-_globalDepth/2,_globalHeight-20]),
             motorXY().mirroredX().translate([_globalWidth/2,-_globalDepth/2,_globalHeight-20]),
-            bearingsXY().rotateZ(-90).translate([-_globalWidth/2+_XYrodsDiam,_globalDepth/2+_wallThickness+5,_globalHeight-17]),
-            bearingsXY().mirroredX().rotateZ(90).translate([_globalWidth/2-_XYrodsDiam,_globalDepth/2+_wallThickness+5,_globalHeight-17]),
-            slideY("right").translate([-_globalWidth/2+6,XaxisOffset,_globalHeight-22]),
-            slideY("left").mirroredX().translate([_globalWidth/2-6,XaxisOffset,_globalHeight-22]),
+            bearingsXY().rotateZ(-90).translate([-_globalWidth/2+_XYrodsDiam+3,_globalDepth/2+_wallThickness+5,_globalHeight-17]),
+            bearingsXY().mirroredX().rotateZ(90).translate([_globalWidth/2-_XYrodsDiam-3,_globalDepth/2+_wallThickness+5,_globalHeight-17]),
+            slideY("right").translate([-_globalWidth/2+9,XaxisOffset,_globalHeight-23]),
+            slideY("left").mirroredX().translate([_globalWidth/2-9,XaxisOffset,_globalHeight-23]),
             //endstop x
             //endstop_meca().rotateZ(90).rotateX(-90).translate([-_globalWidth/2+56,XaxisOffset+18,_globalHeight-9]),
             //endstop y
             //endstop_meca().rotateY(-90).translate([-_globalWidth/2+43,XaxisOffset-15,_globalHeight-52]).setColor(0.2,0.2,0.2),
             
-            //headLeft().translate([headoffset,XaxisOffset,_globalHeight-28]),
-            //headRight().translate([headoffset+32,XaxisOffset,_globalHeight-28])
             ];
 
             if (_rodsVisibility == 1) {
@@ -1410,15 +1055,18 @@ switch(output){
             }
             
             // Z stage 
-            zres = [                    
-                cylinder({r:_ZscrewDiam/2,h:ZrodLength-_nemaXYZ-20,fn:_globalResolution}).translate([0,_globalDepth/2-25,20+_nemaXYZ]).setColor(0.9,0.3,0.3),
-                _nemaWithoutPulley().rotateX(0).translate([-_nemaXYZ/2,_globalDepth/2-_nemaXYZ-4,4]),
-                zTop().translate([0,_globalDepth/2,_globalHeight-35]),
-                zBottom().translate([0,_globalDepth/2,_nemaXYZ+4]),                    
-                slideZ2().translate([-_ZrodsWidth/2,_globalDepth/2-15,_globalHeight/2-30])        
-                // _bed().translate([-_printableWidth/4,-_printableDepth/2,_globalHeight/2+10]);                    
-            ];
-            res.push(union(zres));
+            // zres = [                    
+                // cylinder({r:_ZscrewDiam/2,h:ZrodLength-10,fn:_globalResolution}).translate([0,_globalDepth/2-25,5]).setColor(0.9,0.3,0.3),
+                // _nema().rotateX(180).translate([-_nemaXYZ/2+80,_globalDepth/2,_nemaXYZ+30]),
+                // zTop().translate([0,_globalDepth/2,_globalHeight-35]),
+                // zTop().translate([0,_globalDepth/2,30]),                    
+                // slideZ().translate([-_ZrodsWidth/2,_globalDepth/2-15,_globalHeight/2-30]),
+                // // _bed().translate([-_printableWidth/4,-_printableDepth/2,_globalHeight/2+10]);                    
+                
+                // _timingPulley().rotateX(180).translate([0,_globalDepth/2-25,20])
+
+            // ];
+            // res.push(union(zres));
 
             
             //bowden
@@ -1463,7 +1111,7 @@ switch(output){
 
             zTop(),
             zBottom(),
-            slideZ2().rotateX(180)
+            slideZ().rotateX(180)
             
                 ];
             //bowden
@@ -1502,7 +1150,7 @@ switch(output){
             zTop().translate([0,_globalDepth/2-_wallThickness-5,_globalHeight-35]),
             zBottom().translate([0,_globalDepth/2-_wallThickness,_wallThickness]),
             
-            slideZ2().translate([-_ZrodsWidth/2,_globalDepth/2-_wallThickness-4,_globalHeight/2-30]),
+            slideZ().translate([-_ZrodsWidth/2,_globalDepth/2-_wallThickness-4,_globalHeight/2-30]),
 
                 ];
 
@@ -1554,16 +1202,17 @@ switch(output){
     break;
     case 7:
         if (_exportReady == 1) {
+            _globalResolution = 48;
             res = [
-                //slideY("left").rotateX(90)
+                slideY("left").rotateX(90),
                 slideY("right").mirroredX().rotateX(90)
             ];
             makeplate(res);
         } else {
             res = [
-                //_rods().translate([_globalWidth/2-6,-XaxisOffset,-_globalHeight+22]),
+                _rods().translate([_globalWidth/2-6,-XaxisOffset,-_globalHeight+22]),
                 slideY("right"),
-                //slideY("left").mirroredX().translate([130,0,0])
+                slideY("left").mirroredX().translate([130,0,0])
             ];
         }
     break;
@@ -1574,12 +1223,12 @@ switch(output){
         res = zBottom();
     break;
     case 10:
-        res = [slideZ2()
+        res = [slideZ()
         //slideZsupport().translate([40,0,0]),
         //extraSupportBed().translate([0,-50,0])
-            /*slideZ2().translate([_ZrodsWidth/2-1,_globalDepth/2-_wallThickness-70,_globalHeight/2-40]),
+            /*slideZ().translate([_ZrodsWidth/2-1,_globalDepth/2-_wallThickness-70,_globalHeight/2-40]),
             slideZBearingsSupport().mirroredX().translate([_ZrodsWidth/2-2,_globalDepth/2-_wallThickness-15,_globalHeight/2-40]),
-            slideZ2().mirroredX().translate([-_ZrodsWidth/2+1,_globalDepth/2-_wallThickness-70,_globalHeight/2-40]),
+            slideZ().mirroredX().translate([-_ZrodsWidth/2+1,_globalDepth/2-_wallThickness-70,_globalHeight/2-40]),
             slideZBearingsSupport().translate([-_ZrodsWidth/2+2,_globalDepth/2-_wallThickness-15,_globalHeight/2-40]),
             slideZBeltAttach().translate([-_ZrodsWidth/2+13,_globalDepth/2-_wallThickness-15,_globalHeight/2-40])*/
             ];
@@ -1588,11 +1237,11 @@ switch(output){
         // Z threaded rods
         _ZscrewDiam = 8;
         res = [
-            cylinder({r:_ZscrewDiam/2,h:ZrodLength,fn:_globalResolution}).translate([-_ZrodsWidth/2+30,-25,-155]).setColor(0.9,0.3,0.3),
+            cylinder({r:_ZscrewDiam/2,h:ZrodLength,fn:_globalResolution}).translate([-_ZrodsWidth/2+30,-25,-120]).setColor(0.9,0.3,0.3),
             _rodsZ().translate([0,-_globalDepth/2,-100]),
-            slideZ2().translate([-30,-15,0]),
+            slideZ().translate([-30,-15,0]),
             zTop().translate([0,0,100]),
-            zBottom().translate([0,0,-100])
+            zTop().translate([0,0,-100])
         ];
     break;
     case 12:
