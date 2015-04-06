@@ -64,7 +64,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12,13], 
-        initial: 1, 
+        initial: 5, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -447,33 +447,51 @@ function motorXY(){
     var mesh;
     var clearance = 0.2;
     var rodOffset = 23;
+    
     mesh = difference(
         union(
             // base
             cube({size:[_nemaXYZ/2-5,_nemaXYZ+6,thickness+2]}),
+            
             // wall support
             cube({size:[9,_nemaXYZ+6,20]}),
+            
             //top and back fix
             cube({size:[_wallThickness+9.2,_nemaXYZ+6,thickness]}).translate([-_wallThickness-clearance,0,20]),
             cube({size:[thickness,_nemaXYZ+6,20+thickness]}).translate([-_wallThickness-thickness-clearance,0,0]),
+            
             // rod support - half slotted hole
             cylinder({r:_XYrodsDiam/2+4,h:21,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+6,-3]),
             cylinder({r:thickness+2+3,h:21,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+6,-3]),
             cube({size:[rodOffset,rodOffset,_XYrodsDiam/2]}).translate([0,_nemaXYZ+6-rodOffset,2]),
             cube({size:[_XYrodsDiam*2+3,10,8]}).translate([0,_nemaXYZ-4,0]).rotateY(32.5)
         ),
+        
         nemaHole(_nemaXYZ).translate([_nemaXYZ/2,_nemaXYZ/2,-1]),
+
         // rod support hole
         cylinder({r:_XYrodsDiam/2,h:24,fn:_globalResolution}).rotateX(90).translate([rodOffset,_nemaXYZ+10,-3]),
+        
         //extra bool for printable
         cube({size:[10,10,10]}).translate([_nemaXYZ/2,22.3,0]),
         cube({size:[11.3*2,11.3*2,15]}).translate([_nemaXYZ/2,_nemaXYZ/2-11.3,-5]),
+        
         // round
         roundBoolean2(5,_nemaXYZ+6,"br").translate([-_wallThickness-thickness-clearance,0,thickness+15]),
-        //  holes to fix on the wood side - version simple
+        
+        // holes to fix on the wood side - version simple
         // wood screw holes
-        cylinder({r:2.1,h:20,fn:_globalResolution}).rotateX(-90).rotateZ(90).translate([-_wallThickness,6,5]),
-        cylinder({r:2.1,h:20,fn:_globalResolution}).rotateX(-90).rotateZ(90).translate([-_wallThickness,_nemaXYZ,5]),
+        cylinder({r:1.6,h:40,fn:_globalResolution}).rotateX(-90).rotateZ(90).translate([10,11,10]),
+        cylinder({r:1.6,h:40,fn:_globalResolution}).rotateX(-90).rotateZ(90).translate([10,_nemaXYZ,10]),
+
+        // screw heads
+        cylinder({r:3.1,h:3,fn:_globalResolution}).rotateX(-90).rotateZ(90).translate([9,11,10]),
+        cylinder({r:3.1,h:3,fn:_globalResolution}).rotateX(-90).rotateZ(90).translate([9,_nemaXYZ,10]),
+
+        // nuts
+        cylinder({r:6.5/2,h:3,fn:6}).rotateX(-90).rotateZ(90).translate([-_wallThickness-thickness-clearance+2.5,11,10]),
+        cylinder({r:6.5/2,h:3,fn:6}).rotateX(-90).rotateZ(90).translate([-_wallThickness-thickness-clearance+2.5,_nemaXYZ,10]),
+        
         // extra nema bool (motor body)
         cube({size:[_nemaXYZ,_nemaXYZ,_nemaXYZ]}).translate([0,0,-_nemaXYZ])
     );
@@ -1202,7 +1220,7 @@ switch(output){
         } else {
             res = [
                 //_rods(),
-                _nema().translate([0,0,-_nemaXYZ]),
+                //_nema().translate([0,0,-_nemaXYZ]),
                 motorXY()
             ];
         }
