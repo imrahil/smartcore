@@ -64,7 +64,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12,13], 
-        initial: 8, 
+        initial: 11, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -1276,9 +1276,9 @@ switch(output){
         _ZscrewDiam = 8;
         res = [     
             _rods(),
-            cylinder({r:nutRadius,h:4,fn:6}).translate([0,_globalDepth/2-25,43]),
-            cylinder({r:_ZscrewDiam/2,h:ZrodLength-10,fn:_globalResolution}).translate([0,_globalDepth/2-25,5]).setColor(0.9,0.3,0.3),
-            _nema().rotateX(180).translate([-_nemaXYZ/2+120,_globalDepth/2,_nemaXYZ+40]),
+            cylinder({r:nutRadius,h:4,fn:6}).translate([0,_globalDepth/2-22,43]),
+            cylinder({r:_ZscrewDiam/2,h:ZrodLength-10,fn:_globalResolution}).translate([0,_globalDepth/2-22,5]).setColor(0.9,0.3,0.3),
+            _nema().rotateX(180).translate([-_nemaXYZ/2+120,_globalDepth/2-4,_nemaXYZ+40]),
             zMotorMount().translate([120,_globalDepth/2,32]),
             zTop().translate([0,_globalDepth/2,_globalHeight-35]),
             zTop().translate([0,_globalDepth/2,30])                    
