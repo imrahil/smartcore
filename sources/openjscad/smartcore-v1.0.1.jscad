@@ -64,7 +64,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12,13], 
-        initial: 5, 
+        initial: 8, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -91,7 +91,7 @@ function getParameterDefinitions() {
     { name: '_XYrodsDiam', caption: 'X Y Rods diameter (6, 8 or 10):', type: 'int', initial: 10},
     { name: '_ZrodsDiam', caption: 'Z Rods diameter (6,8,10,12):', type: 'int', initial: 10},
     { name: '_rodsVisibility', caption: 'Show rods:', type: 'choice', initial: 1, values:[0,1],captions: ["false", "true"]},
-    { name: '_exportReady', caption: 'Export ready:', type: 'choice', initial: 0, values:[0,1],captions: ["false", "true"]},
+    { name: '_exportReady', caption: 'Export ready:', type: 'choice', initial: 1, values:[0,1],captions: ["false", "true"]},
     
     
     {name: '_nemaXYZ', 
@@ -147,7 +147,7 @@ function zTop(){
     var width = _ZrodsWidth+_ZrodsDiam+(_rodsSupportThickness*2)+26;
     var height = 12;
     var depth = 30;
-    var z_center = 25;
+    var z_center = 22;
 
     // Z threaded rod
     var mesh = union(
@@ -157,7 +157,12 @@ function zTop(){
             union(
                 bearing608z(),
                 cylinder({r:(_ZscrewDiam+2)/2, h:height+4,fn: _globalResolution}).translate([0,0,-height/2-2])
-            ).translate([0,-z_center,height/2])
+            ).translate([0,-z_center,height/2]),
+            
+            cylinder({r:depth/3+2, h:height+4,fn: 3}).rotateZ(30).translate([-43,-depth/2+4,0]),
+            cylinder({r:depth/3+2, h:height+4,fn: 3}).rotateZ(-30).translate([-26,-depth/2-4,0]),
+            cylinder({r:depth/3+2, h:height+4,fn: 3}).rotateZ(30).translate([43,-depth/2+4,0]),
+            cylinder({r:depth/3+2, h:height+4,fn: 3}).rotateZ(-30).translate([26,-depth/2-4,0])
         )
     );
     
