@@ -64,7 +64,7 @@ function getParameterDefinitions() {
         caption: 'What to show :', 
         type: 'choice', 
         values: [0,1,2,3,4,-1,5,6,7,8,9,10,11,12,13], 
-        initial: 11, 
+        initial: 7, 
         captions: ["-----", //0
                     "All printer assembly", //1
                     "printed parts plate", //2
@@ -432,13 +432,17 @@ function slideY(side){
             mesh = union(
                 mesh,
                 bearing608z().translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+0.5]),
-                bearing608z().translate([bearingsOffsetX,bearingsOffsetY,bearingsOffsetZ+11+0.5])
+                bearing608z().translate([bearingsOffsetX,bearingsOffsetY,bearingsOffsetZ+11+0.5]),
+                bearing_LM10UU().rotateX(-90).translate([bearingsOffsetX,0,0]),
+                bearing_LM10UU().rotateX(-90).translate([bearingsOffsetX,29,0])
             );
         } else {
             mesh = union(
                 mesh,
                 bearing608z().translate([bearingsOffsetX,bearingsOffsetY,bearingsOffsetZ+0.5]),
-                bearing608z().translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+0.5])
+                bearing608z().translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,bearingsOffsetZ+11+0.5]),
+                bearing_LM10UU().rotateX(-90).translate([bearingsOffsetX,0,0]),
+                bearing_LM10UU().rotateX(-90).translate([bearingsOffsetX,29,0])
             );
         }
     }
@@ -832,6 +836,27 @@ function bearing608z(){
     );
     
     return mesh.setColor(0.4,0.4,0.4);
+}
+
+function bearing_LM10UU(){
+    var outer = difference(
+        cylinder({r:19/2,h:29,fn:_globalResolution}),
+        cylinder({r:(19-2.5)/2,h:30,fn:_globalResolution})
+    );
+    outer = outer.setColor(0.7,0.7,0.7);
+    
+    var inner = difference(
+        cylinder({r:(19-2.5)/2,h:27,fn:_globalResolution}),
+        cylinder({r:5,h:28,fn:_globalResolution})
+    ).translate([0,0,1]);
+    inner = inner.setColor(0.2,0.2,0.2);
+    
+    var mesh = union(
+        outer,
+        inner
+    )
+    
+    return mesh;
 }
 
 function Gt2Holder(boolOffset,height){
@@ -1240,7 +1265,7 @@ switch(output){
     break;
     case 7:
         if (_exportReady == 1) {
-            _globalResolution = 48;
+            // _globalResolution = 48;
             res = [
                 slideY("left").rotateX(90),
                 slideY("right").mirroredX().rotateX(90)
