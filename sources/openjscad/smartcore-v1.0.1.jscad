@@ -341,8 +341,8 @@ function slideY(side){
         mesh = difference(
             mesh,
             cylinder({r:8/2,h:Z+4,fn:_globalResolution}).translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,-2]),
-            cylinder({r:6.8/2,h:Z,fn:_globalResolution}).translate([bearingsOffsetX,bearingsOffsetY,bearingsOffsetZ]),
-            cylinder({r:nutRadius,h:10,fn:6}).rotateZ(90).translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,-3])
+            cylinder({r:6.8/2,h:Z,fn:_globalResolution}).translate([bearingsOffsetX,bearingsOffsetY,bearingsOffsetZ])
+            //cylinder({r:nutRadius,h:10,fn:6}).rotateZ(90).translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,-3])
         );
     } else {
         // right
@@ -369,8 +369,8 @@ function slideY(side){
         mesh = difference(
             mesh,
             cylinder({r:8/2,h:Z+4,fn:_globalResolution}).translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,-2]),
-            cylinder({r:6.8/2,h:Z+4,fn:_globalResolution}).translate([bearingsOffsetX,bearingsOffsetY,_XYlmDiam/2+2]),
-            cylinder({r:nutRadius,h:10,fn:6}).rotateZ(90).translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,-3])
+            cylinder({r:6.8/2,h:Z+4,fn:_globalResolution}).translate([bearingsOffsetX,bearingsOffsetY,_XYlmDiam/2+2])
+            //cylinder({r:nutRadius,h:10,fn:6}).rotateZ(90).translate([bearingsOffsetX+bearingHoleOffsetX,Y-bearingsOffsetY,-3])
         );
     }
 
@@ -402,8 +402,8 @@ function slideY(side){
         cylinder({r:1.3,h:10,fn:_globalResolution}).translate([0,Y-10,-5]),
         
         // Xrod holes bottom - distance: 42mm
-        cylinder({r:_XYrodsDiam/2,h:10,fn:_globalResolution}).rotateY(90).translate([X-5,Y-(_XYrodsDiam/2+_rodsSupportThickness),15/2]),
-        cylinder({r:_XYrodsDiam/2,h:10,fn:_globalResolution}).rotateY(90).translate([X-5,_XYrodsDiam/2+_rodsSupportThickness,15/2]),
+        cylinder({r:_XYrodsDiam/2,h:15,fn:_globalResolution}).rotateY(90).translate([X-6,Y-(_XYrodsDiam/2+_rodsSupportThickness),15/2]),
+        cylinder({r:_XYrodsDiam/2,h:15,fn:_globalResolution}).rotateY(90).translate([X-6,_XYrodsDiam/2+_rodsSupportThickness,15/2]),
         
         // screws to attach the rods
         cylinder({r:1.3,h:10,fn:_globalResolution}).rotateX(-90).translate([X+0.5,0,15/2]),
@@ -1265,7 +1265,7 @@ switch(output){
     break;
     case 7:
         if (_exportReady == 1) {
-            // _globalResolution = 48;
+            _globalResolution = 48;
             res = [
                 slideY("left").rotateX(90),
                 slideY("right").mirroredX().rotateX(90)
