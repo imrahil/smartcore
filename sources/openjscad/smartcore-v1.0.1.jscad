@@ -584,7 +584,7 @@ function head(){
     var height = (_XYlmDiam/2)+(2*_rodsSupportThickness)+15;
     var depth = _XrodsWidth+(_XYlmDiam)+(_rodsSupportThickness*4);
 
-    var extruderType = 0;       // 0 - standard Wade (50mm), 1 - Goliat (38mm)
+    var extruderType = 1;       // 0 - standard Wade (50mm), 1 - Goliat (38mm)
 
     var extruderMountWidth = 0;
     var hotendShift = 0;        // for Goliat it's 6mm
@@ -621,21 +621,33 @@ function head(){
         cylinder({r:_XYlmDiam/2+0.1,h:width,fn:_globalResolution*1.5}).rotateY(90).translate([-width/2,_XrodsWidth/2,height-4]),
         
         // filament hole
-        cylinder({r:3.1/2,h:30,fn:_globalResolution}).translate([hotendShift,0,0]),
-                 
-        union(
+        cylinder({r:3.1/2,h:30,fn:_globalResolution}).translate([hotendShift,0,0])
+    );
+        
+    if (extruderType == 0) {
+        var extruder_holes = union(
             // extruder attach holes 
             cylinder({r:4/2,h:height/2-3.5,fn:_globalResolution}).translate([extruderMountWidth/2,0,0]),
             cylinder({r:4/2,h:height/2-3.5,fn:_globalResolution}).translate([-extruderMountWidth/2,0,0]),
-            
+
             // extruder nut pockets
             cube({size:[20,7.5,4]}).translate([extruderMountWidth/2-5,-7.5/2,8]),
             cube({size:[20,7.5,4]}).translate([-extruderMountWidth/2-15,-7.5/2,8])
+        ).rotateZ(90);
+    } else if (extruderType == 1) {
+        extruder_holes = union(
+            // extruder attach holes 
+            cylinder({r:4/2,h:height,fn:_globalResolution}).translate([extruderMountWidth/2,0,0]),
+            cylinder({r:4/2,h:height,fn:_globalResolution}).translate([-extruderMountWidth/2,0,0]),
 
-            // cylinder({r:8.5/2,h:8,fn:_globalResolution}).translate([extruderMountWidth/2,0,height-7]),
-            // cylinder({r:8.5/2,h:4,fn:_globalResolution}).translate([-extruderMountWidth/2,0,height-4])
-        ).rotateZ(90),
-        
+            cylinder({r:8/2,h:13,fn:_globalResolution}).translate([extruderMountWidth/2,0,height-13]),
+            cylinder({r:8/2,h:13,fn:_globalResolution}).translate([-extruderMountWidth/2,0,height-13])
+        )
+    };
+
+    mesh = difference(
+        mesh,
+        extruder_holes,
         // hotend attach holes 
         cylinder({r:1.6,h:height,fn:_globalResolution}).translate([10+hotendShift,-hotendMountHoles,0]),
         cylinder({r:1.6,h:height,fn:_globalResolution}).translate([10+hotendShift,hotendMountHoles,0]),
@@ -660,16 +672,18 @@ function head(){
         cube({size:[9,3,6]}).translate([-width/2,-depth/2+16,7-6/2]),
         cube({size:[9,3,6]}).translate([-width/2,depth/2-16,10-6/2])
     );
+
     
-    mesh = union(
-        mesh,
+    
+    // mesh = union(
+        // mesh,
         
-        // belt tensioners
-        belt_tensioner().translate([width/2-10,depth/2+3,0]),
-        belt_tensioner().mirroredX().translate([-width/2+10,depth/2+3,0]),
-        belt_tensioner().mirroredY().translate([width/2-10,-depth/2-3,0]),
-        belt_tensioner().mirroredY().mirroredX().translate([-width/2+10,-depth/2-3,0])
-    );
+        // // belt tensioners - uncomment to render
+        // belt_tensioner().translate([width/2-10,depth/2+3,0]),
+        // belt_tensioner().mirroredX().translate([-width/2+10,depth/2+3,0]),
+        // belt_tensioner().mirroredY().translate([width/2-10,-depth/2-3,0]),
+        // belt_tensioner().mirroredY().mirroredX().translate([-width/2+10,-depth/2-3,0])
+    // );
     
     mesh = difference (
         mesh,
@@ -691,10 +705,10 @@ function head(){
         cylinder({r:4/2,h:1,fn:_globalResolution}).translate([-10+hotendShift,hotendMountHoles,3]),
 
         // belt tensioners support
-        cube({size:[10,6,16.7]}).translate([width/2-9.5,depth/2-5.5,0]),
-        cube({size:[10,6,16.7]}).translate([-width/2-0.5,depth/2-5.5,0]),
-        cube({size:[10,6,16.7]}).translate([width/2-9.5,-depth/2-0.5,0]),
-        cube({size:[10,6,16.7]}).translate([-width/2-0.5,-depth/2-0.5,0])
+        cube({size:[9.5,5.5,16.7]}).translate([width/2-9.5,depth/2-5.5,0]),
+        cube({size:[9.5,5.5,16.7]}).translate([-width/2,depth/2-5.5,0]),
+        cube({size:[9.5,5.5,16.7]}).translate([width/2-9.5,-depth/2,0]),
+        cube({size:[9.5,5.5,16.7]}).translate([-width/2,-depth/2,0])
     );
  
     mesh = mesh.setColor(0.2,0.7,0.2);
@@ -702,7 +716,7 @@ function head(){
     if(output==12 && _exportReady != 1){
         mesh = union(
             mesh,
-            // hotend_mount().rotateY(180).translate([width/2+15,depth/2-10,height+6]),
+            // hotend_mount().rotateY(180).translate([hotendShift,0,height+6]),
             bearing_LM10UU().rotateY(-90).translate([0,_XrodsWidth/2,height-4]),
             bearing_LM10UU().rotateY(-90).translate([width/2,_XrodsWidth/2,height-4]),
             bearing_LM10UU().rotateY(-90).translate([0,-_XrodsWidth/2,height-4]),
